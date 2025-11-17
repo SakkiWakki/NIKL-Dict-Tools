@@ -1,6 +1,6 @@
 import json
 
-files = ["unihan/hanjareadings.json", "hanja2hangul/hanja2hangul.json"]
+files = ["hanja2hangul/hanja2hangul.json", "unihan/hanjareadings.json"]
 
 combined = {}
 
