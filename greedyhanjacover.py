@@ -2,7 +2,7 @@
 # May have some errors in practice, 
 # e.g. if two hanja compound boundaries actually have a irregular phonologic reading
 #      when together in practice, or if singular character has multiple readings
-# Also not optimal for some four character idioms
+# Also not optimal for some long compounds e.g. 生殺與奪權
 
 import re
 import json
@@ -29,28 +29,18 @@ def greedy_hanja_match(s, data):
     runner_idx = 0
     substr = ""
     ret = ""
-    s += " "
+    s += " " # We need an extra space to trigger a "not in data"
     print(f'on {s}')
     build_gloss = lambda s : s + LDELIM + data[s] + RDELIM
     while (chaser_idx != runner_idx):
         substr += s[runner_idx]
-        print(f'sub {substr}')
         if substr not in data:
-            print(f'sub not in data')
             ret += build_gloss(s[chaser_idx : runner_idx])
             chaser_idx = runner_idx
             substr = s[runner_idx]
-
-            print(f'new sub {substr}')
         runner_idx = min(len(s) - 1, runner_idx + 1)
-        chaser_idx = max(chaser_idx, 0)
-        print(f'Runner {runner_idx}, Chaser {chaser_idx}')
-        
-    return ret
-        
-
-    # print(f"For {s}")
-   
+        chaser_idx = max(chaser_idx, 0)        
+    return ret   
     
 
 with open(hanja2hangulpath, 'r', encoding='utf-8') as file:
