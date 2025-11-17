@@ -25,6 +25,8 @@ RDELIM = ")"
 
 def greedy_hanja_match(s, data):
     # Greedy on earilest largest compound
+    # I suspect that starting from the longest string and decreasing its size
+    # might fare better since it would recognize longer compounds more readily
     chaser_idx = -1
     runner_idx = 0
     substr = ""
