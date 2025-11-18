@@ -1,6 +1,7 @@
 import json
 
-files = ["hanja2hangul/hanja2hangul.json", "unihan/hanjareadings.json"]
+# In order of reliability
+files = ["hanja2hangul/hanja2hangul.json", "singularhanja/singularhanja.json", "unihan/hanjareadings.json"]
 
 combined = {}
 

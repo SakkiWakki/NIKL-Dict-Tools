@@ -1,4 +1,8 @@
-Built for 
+NIKI Dict from
 https://github.com/spellcheck-ko/korean-dict-nikl/
 
-You should obtain the data manually.
+Singular hanja table from
+https://github.com/suminb/hanja/blob/develop/hanja/table.yml
+
+Other singular hanja readings from the Unihan project
+
