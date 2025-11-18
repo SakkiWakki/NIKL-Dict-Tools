@@ -1,5 +1,6 @@
 import json
 import pathlib
+import os
 
 def load_info():
     """
@@ -122,10 +123,12 @@ def make_data():
 
                 out[TO_CATEGORY[source_corpus]].append({"text":newtext})
 
+    os.makedirs("OKHC_processed", exist_ok=True)
     for category, obj in out.items():
         with open(f"OKHC_processed/{category}.jsonl", "w", encoding="utf-8") as f:
             json.dump(obj, f, ensure_ascii=False)
             f.write("\n")
+            print(f"Wrote {category}.jsonl")
 
 
 make_data()
