@@ -38,7 +38,8 @@ def load_info():
     print(f"{len(source_corpus)} diff source+corpus: {source_corpus}")
 
 def make_data():
-    SCRIPTS = ('Hanja, Hangeul', 'Old Hangeul', 'Hanja', 'Hanja, Old Hangeul', 'Hangeul')
+    # SCRIPTS = ('Hanja, Hangeul', 'Old Hangeul', 'Hanja', 'Hanja, Old Hangeul', 'Hangeul')
+    SCRIPTS = ('Hanja, Hangeul')
     SOURCE_CORPUS = {
         "news": [
             ("Naver News Library & The Dong-A Ilbo", "Naver News Library"),
@@ -110,10 +111,11 @@ def make_data():
                 source_corpus = (entry.get("source"), entry.get("corpus"))
                 if source_corpus not in TO_CATEGORY:
                     continue
-
                 text = entry["text"]
                 if text == "[TEXT REMOVED DUE TO COPYRIGHT]":
                     continue
+                year = entry["year"]
+                title = entry["text"] 
                 newtext = ""
                 for c in text:
                     if c in variant_to_hanja:
@@ -121,7 +123,7 @@ def make_data():
                     else:
                         newtext += c
 
-                out[TO_CATEGORY[source_corpus]].append({"text":newtext})
+                out[TO_CATEGORY[source_corpus]].append({"year": year, "title":title, "text":newtext})
 
     os.makedirs("OKHC_processed", exist_ok=True)
     for category, obj in out.items():

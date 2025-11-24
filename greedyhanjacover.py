@@ -20,16 +20,18 @@ HANJA_ONLY_RE = re.compile(
     r'\U00030000-\U000323AF'
     r']+'
 )
-
-LDELIM = "("
-RDELIM = ")"
+# "􏿽", "􏿾"
+LDELIM = "􏿽"
+RDELIM = "􏿾"
 errors = set()
 
-
-def greedy_hanja_match(s, data):
-    # Greedy on earilest largest compound
-    # I suspect that starting from the longest string and decreasing its size
-    # might fare better since it would recognize longer compounds more readily
+# Greedy on earilest largest compound
+# I suspect that starting from the longest string and decreasing its size
+# might fare better since it would recognize longer compounds more readily
+def greedy_hanja_match(s, data, mode="gloss"):
+        """
+        mode can be 'gloss' or 'replace'
+        """
     
         chaser_idx = -1
         runner_idx = 0
@@ -37,7 +39,10 @@ def greedy_hanja_match(s, data):
         ret = ""
         s += " " # We need an extra space to trigger a "not in data"
         # print(f'on {s}')
-        build_gloss = lambda s : s + LDELIM + data[s] + RDELIM
+        if mode == 'gloss':
+            build_gloss = lambda s : s + LDELIM + data[s] + RDELIM
+        else: 
+            build_gloss = lambda s : data[s]
         while (chaser_idx != runner_idx):
             substr += s[runner_idx]
             if substr not in data:
@@ -49,7 +54,10 @@ def greedy_hanja_match(s, data):
                         # If the first character can't be found, then we get an empty seq
                         seq = s[0]
                     errors.add(seq)
-                    ret += seq + LDELIM + ('?' * len(seq)) + RDELIM
+                    if mode == 'gloss':
+                        ret += seq + LDELIM + ('?' * len(seq)) + RDELIM
+                    else:
+                        ret += '?' * len(seq)
                 chaser_idx = runner_idx
                 substr = s[runner_idx]
             runner_idx = min(len(s) - 1, runner_idx + 1)
@@ -81,40 +89,54 @@ def single_inp():
         cumstr += inp[last_e:]
 
         print(cumstr)
-
+N = 10000
+OUT = f"hanja_news_{N}.txt"
 def mult_inp():
+    start = 0
     with open(hanja2hangulpath, 'r', encoding='utf-8') as file:
         with open("hanjareadings.json", 'r', encoding='utf-8') as d:
-            print("Loading data...")
-            inps = json.load(file)
-            data = json.load(d)
-            print("Finished loading data")
-            for entry in inps:
-                inp = entry["text"]
+            with open(OUT, 'w', encoding='utf-8') as out_f:
+                print("Loading data...")
+                inps = json.load(file)
+                data = json.load(d)
+                print("Finished loading data")
+                for entry in inps:
+                    start += 1
+                    if start > N: break
+                    text = entry["text"]
 
-                # print("\n====================================================")
-                # print("Original Input")
-                # print(inp)
-                # print()
+                    # print("\n====================================================")
+                    # print("Original Input")
+                    # print(inp)
+                    # print()
 
-                h_starts = []
-                h_ends = []
+                    h_starts = []
+                    h_ends = []
 
-                for h_compound in HANJA_ONLY_RE.finditer(inp):
-                    h_starts.append(h_compound.start())
-                    h_ends.append(h_compound.end())
+                    for h_compound in HANJA_ONLY_RE.finditer(text):
+                        h_starts.append(h_compound.start())
+                        h_ends.append(h_compound.end())
 
-                last_e = 0
-                cumstr = ""
-                for s, e in zip(h_starts, h_ends):
-                    cumstr += inp[last_e : s]
-                    cumstr += greedy_hanja_match(inp[s : e], data)
-                    last_e = e
-                cumstr += inp[last_e:]
-
-                # print("Glossed Output")
-                # print(cumstr)
-                # print("====================================================\n")
+                    last_e = 0
+                    cumstr = ""
+                    replacestr = ""
+                    for s, e in zip(h_starts, h_ends):
+                        cumstr += text[last_e : s]
+                        replacestr += text[last_e : s]
+                        cumstr += greedy_hanja_match(text[s : e], data, "gloss")
+                        replacestr += greedy_hanja_match(text[s : e], data, "replace")
+                        last_e = e
+                    cumstr += text[last_e:]
+                    replacestr += text[last_e:]
+                    
+                    cumstr_s = cumstr.split("\n")
+                    replacestr_s = replacestr.split("\n")
+                    # text_s   = text.split("\n")
+                    for r, c in zip(replacestr_s, cumstr_s):
+                        out_f.write(f"<HANGUL> {r} <HANJA> {c}\n")
+                    # print("Glossed Output")
+                    # print(cumstr)
+                    # print("====================================================\n")
     print("Done!")
     if errors:
         print("uhoh stinky! D:")
